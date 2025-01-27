@@ -4,11 +4,15 @@ from passlib.context import CryptContext
 from decouple import config
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
+import logging
+
+# Logiranje
+logger = logging.getLogger(__name__)
 
 # JWT konfiguracija
 SECRET_KEY = config("SECRET_KEY")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = int(config("ACCESS_TOKEN_EXPIRE_MINUTES", default=30))
 
 # OAuth2 shema za autentifikaciju putem tokena
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
