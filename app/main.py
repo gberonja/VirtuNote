@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from routers import users, notes
+from UserAPI.routes import users
+from routers import notes
 
 app = FastAPI(
     title="VirtuNote",
