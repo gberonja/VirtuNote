@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+boto3
+python-decouple
+httpx
+passlib[bcrypt]
+python-jose[cryptography]
+pydantic[email]
+python-multipart
+bcrypt

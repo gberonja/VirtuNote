@@ -1,20 +1,24 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
 
 class UserRegister(BaseModel):
-    """Model za registraciju korisnika."""
-    username: str
-    password: str
+    username: str = Field(..., min_length=3, max_length=50, description="Username")
+    password: str = Field(..., min_length=4, description="Password")
+    email: EmailStr = Field(..., description="User email")
 
 class UserResponse(BaseModel):
-    """Model za odgovor sa podacima korisnika."""
-    username: str
+    id: str = Field(..., description="User ID")
+    username: str = Field(..., description="Username")
+    email: EmailStr = Field(..., description="User email")
 
 class TokenResponse(BaseModel):
-    """Model za odgovor sa tokenom."""
-    access_token: str
-    token_type: str
-    
+    access_token: str = Field(..., description="Access token")
+    token_type: str = Field(..., description="Token type")
+
 class LoginRequest(BaseModel):
-    username: str
-    password: str
+    username: str = Field(..., min_length=3, max_length=50, description="Username")
+    password: str = Field(..., min_length=4, description="Password")
+
+class UpdateUserRequest(BaseModel):
+    email: Optional[EmailStr] = Field(None, description="New email address")
+    password: Optional[str] = Field(None, min_length=4, description="New password (at least 4 characters)")
