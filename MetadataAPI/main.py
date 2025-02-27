@@ -1,31 +1,29 @@
-from fastapi import FastAPI, Depends
-from fastapi.security import OAuth2PasswordBearer
-from routes.metadata import router as metadata_router
+import uvicorn
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from routes.metadata import router as metadata_router
 
 app = FastAPI(
-    title="MetadataAPI",
-    description="API za upravljanje metapodacima notnih zapisa",
+    title="Metadata API",
+    description="API for managing music score metadata",
     version="1.0.0"
-)
-
-
-app.include_router(
-    metadata_router,
-    prefix="/metadata",
-    tags=["Metadata"]
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:8000", "http://127.0.0.1:8001"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+app.include_router(metadata_router, prefix="/metadata", tags=["metadata"])
+
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to Metadata API"}
+
 
 if __name__ == "__main__":
-    import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

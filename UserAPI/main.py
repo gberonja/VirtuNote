@@ -8,15 +8,22 @@ app = FastAPI(
     version="1.0.0"
 )
 
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:8001", "http://127.0.0.1:8002"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 app.include_router(users_router, prefix="/users", tags=["Users"])
+
+
+@app.get("/")
+def read_root():
+    return {"message": "UserAPI service is running"}
+
 
 if __name__ == "__main__":
     import uvicorn

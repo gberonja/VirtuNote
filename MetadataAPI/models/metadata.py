@@ -1,13 +1,50 @@
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, HttpUrl
+from typing import List, Optional, Literal
+from datetime import datetime
+import uuid
 
-class MetadataCreate(BaseModel):
-    score_id: str = Field(..., description="Unique identifier for the score")
-    title: str = Field(..., description="Title of the score")
-    composer: str = Field(..., description="Composer's name")
 
-class MetadataResponse(BaseModel):
-    score_id: str = Field(..., description="Unique identifier for the score")
-    title: str = Field(..., description="Title of the score")
-    composer: str = Field(..., description="Composer's name")
-    uploaded_at: Optional[str] = Field(None, description="Timestamp when metadata was created")
+class Comment(BaseModel):
+    user_id: str
+    content: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }
+
+
+class ScoreBase(BaseModel):
+    title: str = Field(..., min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+    tags: Literal["classical", "folk", "pop", "rock"] = "classical"
+
+
+class ScoreInDB(ScoreBase):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    file_url: HttpUrl
+    datum_unosa: datetime = Field(default_factory=datetime.utcnow)
+    komentari: List[Comment] = Field(default_factory=list)
+    broj_likeova: int = 0
+    likes_by_users: List[str] = Field(default_factory=list)
+
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }
+
+
+class ScoreResponse(ScoreInDB):
+    pass
+
+
+class LikeResponse(BaseModel):
+    score_id: str
+    broj_likeova: int
+    message: str = "Like added successfully"
+
+
+class DeleteResponse(BaseModel):
+    message: str = "Resource deleted successfully"
