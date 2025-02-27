@@ -1,56 +1,113 @@
 # VirtuNote
 
-VirtuNote is an application for storing and sharing musical notation that enables users to easily save, view, and share music scores. It is designed for musicians, educators, and students who want to exchange their own work and follow the work of other users.
+VirtuNote is a comprehensive application for storing and sharing musical notation that enables musicians, educators, and students to easily save, view, and share music scores. It provides a secure, efficient platform for music professionals and enthusiasts to exchange their own compositions, arrangements, and educational materials while discovering and following the work of other users.
 
 ## Project Overview
 
-This project was created for the Distributed Systems course and implements a microservices architecture with three main services:
+This project was developed for the Distributed Systems course at the Faculty of Informatics in Pula, Croatia. It implements a robust microservices architecture with three primary interconnected services:
 
-- **UserAPI**: Handles user authentication and management
-- **MetadataAPI**: Manages metadata for music scores
-- **ScoreAPI**: Manages the actual score files (PDFs)
+- **UserAPI**: Handles user authentication, registration, and profile management
+- **MetadataAPI**: Manages comprehensive metadata for music scores including categorization, social interactions, and search functionality
+- **ScoreAPI**: Manages the upload, storage, and retrieval of musical score files (PDFs)
+
+The system demonstrates the practical application of distributed systems concepts including microservice communication, data consistency across services, containerization, and cloud-based storage solutions.
 
 ## Features
 
-- User registration and authentication using JWT tokens
-- Upload and management of PDF music scores
-- Score metadata including title, description, and tags
-- Social features such as likes and comments
-- File storage using AWS S3
-- Metadata storage using AWS DynamoDB
+### Core Functionality
+- User registration and secure authentication using JWT tokens
+- Upload, download, and management of PDF music scores
+- Comprehensive score metadata including title, description, tags, and categorization
+- Advanced search and filtering capabilities by various criteria
 
-## Architecture
+### Social Features
+- Like system to show appreciation for others' work
+- Commenting system for feedback and discussions
+- User profiles to showcase uploaded scores
+- Activity tracking for engagement metrics
 
-The application is built using a microservices architecture with the following components:
+### Technical Features
+- Secure file storage using AWS S3 with unique file identifiers (UUID v4)
+- Efficient metadata storage using AWS DynamoDB NoSQL database
+- RESTful API architecture with comprehensive endpoint documentation
+- Microservices communication with proper error handling and fallbacks
+- Data consistency mechanisms across distributed services
 
-### UserAPI
+## System Architecture
 
-- Handles user registration and authentication
-- Manages user profiles and credentials
-- Secures passwords using bcrypt hashing
-- Provides JWT tokens for authenticated access
+VirtuNote is built on a modern microservices architecture that emphasizes scalability, maintainability, and separation of concerns. Each service is containerized and can be deployed independently, allowing for flexible scaling and updates.
 
-### MetadataAPI
+### Microservices Overview
 
-- Stores and manages metadata about music scores
-- Handles score categorization with tags
-- Manages social interactions (likes, comments)
-- Provides search and filtering capabilities
+#### UserAPI Service
+- Handles user registration with email verification
+- Manages secure authentication with salted password hashing
+- Maintains user profiles and account settings
+- Implements role-based access control for different user types
+- Secures passwords using bcrypt hashing with configurable work factors
+- Generates and validates JWT tokens with custom claims for authenticated access
+- Manages password reset and account recovery workflows
 
-### ScoreAPI
+#### MetadataAPI Service
+- Stores and manages detailed metadata about music scores
+- Implements a tagging system with predefined categories (classical, folk, pop, rock)
+- Tracks creation and modification timestamps for all resources
+- Manages social interactions including likes and comment threads
+- Provides comprehensive search with multiple filter parameters
+- Implements pagination for large result sets
+- Ensures data consistency with validation rules
+- Exposes endpoints for analytics and trending content
 
-- Manages the upload and retrieval of score files (PDFs)
-- Communicates with S3 for file storage
-- Interacts with the MetadataAPI to maintain file metadata
+#### ScoreAPI Service
+- Manages the secure upload and retrieval of score files (PDFs)
+- Handles file validation and virus scanning
+- Communicates with AWS S3 for durable file storage with backup policies
+- Generates unique, non-guessable file identifiers for each upload
+- Interacts with the MetadataAPI to maintain synchronized file metadata
+- Supports direct file downloads with appropriate content headers
+- Implements file versioning for tracking changes to scores
+
+### Communication Patterns
+
+The services communicate using REST APIs with defined contracts, employing:
+- HTTP status codes for proper error handling
+- JWT token validation for secure service-to-service communication
+- Retry mechanisms with exponential backoff for handling temporary failures
+- Circuit breakers to prevent cascading failures
+- Structured logging for debugging and monitoring
 
 ## Technologies Used
 
-- **Backend**: FastAPI
-- **Database**: AWS DynamoDB
-- **File Storage**: AWS S3
-- **Authentication**: JWT (JSON Web Tokens)
-- **Containerization**: Docker and Docker Compose
-- **API Documentation**: Swagger/OpenAPI
+### Backend Framework
+- **FastAPI**: Modern, high-performance Python web framework with automatic OpenAPI documentation
+- **Uvicorn**: ASGI server implementation for running the FastAPI applications
+- **Pydantic**: Data validation and settings management using Python type annotations
+
+### Database and Storage
+- **AWS DynamoDB**: Fully managed NoSQL database service for consistent, single-digit millisecond latency
+- **AWS S3**: Scalable object storage service for storing and retrieving PDF files
+- **Boto3**: AWS SDK for Python to interact with Amazon Web Services
+
+### Security and Authentication
+- **JWT (JSON Web Tokens)**: For secure authentication and authorization
+- **Passlib & Bcrypt**: For password hashing and verification
+- **Python-jose**: For JWT token generation and validation
+- **OAuth2**: Implementation of the OAuth2 specification with password bearer flow
+
+### Containerization and Orchestration
+- **Docker**: For creating consistent development and production environments
+- **Docker Compose**: For defining and running multi-container Docker applications
+- **Health checks**: For ensuring service availability and proper startup order
+
+### Development Tools
+- **Python 3.11**: Latest stable Python version for modern language features
+- **Git**: Version control system for collaborative development
+- **Python-decouple**: For managing environment variables and configurations
+- **Httpx**: Fully featured HTTP client for Python for service-to-service communication
+
+### API Documentation
+- **Swagger/OpenAPI**: Automatic interactive API documentation
+- **ReDoc**: Alternative documentation UI for API exploration
 
 ## Security Features
 
@@ -63,48 +120,117 @@ The application is built using a microservices architecture with the following c
 
 ### Prerequisites
 
-- Docker and Docker Compose
-- AWS account with access to DynamoDB and S3
-- Python 3.11+ (for local development)
+- Docker and Docker Compose for containerized deployment
+- AWS account with access to DynamoDB and S3 services
+- Python 3.11+ (for local development without Docker)
+- Git for version control
+- Basic understanding of REST APIs and microservices architecture
+
+### AWS Setup
+
+1. Create an AWS account if you don't have one
+2. Create an S3 bucket for score storage with appropriate CORS configuration
+3. Create DynamoDB tables for user data and metadata
+4. Create an IAM user with programmatic access and appropriate permissions for S3 and DynamoDB
+5. Note your AWS access key, secret key, and region for configuration
 
 ### Environment Variables
 
 Create a `.env` file in the root directory with the following variables:
 
 ```
-SECRET_KEY=your_secret_key
+# Security
+SECRET_KEY=your_secure_random_secret_key_at_least_32_characters
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# AWS Configuration
 AWS_ACCESS_KEY_ID=your_aws_access_key
 AWS_SECRET_ACCESS_KEY=your_aws_secret_key
 AWS_REGION=your_aws_region
 AWS_S3_BUCKET_NAME=your_s3_bucket_name
+
+# DynamoDB Tables
 DYNAMODB_TABLE_USERS=your_users_table_name
 DYNAMODB_TABLE_METADATA=your_metadata_table_name
+
+# Service Configuration
+METADATA_API_URL=http://metadataapi:8000/metadata/
+ALLOWED_ORIGINS=http://localhost:3000,https://your-frontend-domain.com
 ```
 
 ### Running with Docker Compose
 
-1. Clone the repository
-2. Create the `.env` file with required variables
-3. Build and start the services:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/virtunote.git
+   cd virtunote
+   ```
 
-```bash
-docker-compose up -d
-```
+2. Create the `.env` file with required variables as shown above
+
+3. Build and start the services:
+   ```bash
+   docker-compose up -d
+   ```
 
 4. Access the services:
    - UserAPI: http://localhost:8000
    - ScoreAPI: http://localhost:8001
    - MetadataAPI: http://localhost:8002
+   
+5. Monitor the logs:
+   ```bash
+   docker-compose logs -f
+   ```
+
+6. To stop the services:
+   ```bash
+   docker-compose down
+   ```
+
+### Creating Initial Admin User
+
+After starting the services, you'll need to create an initial admin user:
+
+```bash
+curl -X POST http://localhost:8000/users/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"your_secure_password","email":"admin@example.com"}'
+```
 
 ## API Documentation
 
-Once the services are running, you can access the API documentation at:
+Once the services are running, you can access the interactive API documentation at:
 
-- UserAPI: http://localhost:8000/docs
-- ScoreAPI: http://localhost:8001/docs
-- MetadataAPI: http://localhost:8002/docs
+- UserAPI: http://localhost:8000/docs or http://localhost:8000/redoc
+- ScoreAPI: http://localhost:8001/docs or http://localhost:8001/redoc
+- MetadataAPI: http://localhost:8002/docs or http://localhost:8002/redoc
+
+The documentation provides detailed information about:
+- Available endpoints
+- Request parameters and body schemas
+- Response formats and status codes
+- Authentication requirements
+- Interactive testing interface
 
 ## Development
+
+### Project Structure
+
+Each service follows a similar structure:
+
+```
+ServiceName/
+├── auth/           # Authentication utilities
+├── database/       # Database connection and operations
+├── models/         # Pydantic models for data validation
+├── routes/         # API route definitions
+├── utils/          # Utility functions
+├── Dockerfile      # Docker configuration
+├── main.py         # Application entry point
+└── requirements.txt # Dependencies
+```
 
 ### Installing Dependencies
 
@@ -113,6 +239,8 @@ pip install -r requirements.txt
 ```
 
 ### Running Services Locally
+
+For development purposes, you can run each service locally:
 
 ```bash
 # UserAPI
@@ -127,3 +255,30 @@ uvicorn main:app --reload --port 8002
 cd ScoreAPI
 uvicorn main:app --reload --port 8001
 ```
+
+### Testing
+
+Each service includes unit and integration tests:
+
+```bash
+# Run tests for a specific service
+cd ServiceName
+pytest
+
+# Run tests with coverage report
+pytest --cov=. --cov-report=term-missing
+```
+
+### Contribution Guidelines
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+© Gabriel Beronja, Faculty of Informatics in Pula (Fakultet informatike u Puli), 2025.
+
+This project was developed as part of the Distributed Systems course at the Faculty of Informatics in Pula. All rights reserved.
