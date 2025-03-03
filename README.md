@@ -40,32 +40,36 @@ VirtuNote is built on a modern microservices architecture that emphasizes scalab
 ### Microservices Overview
 
 #### UserAPI Service
-- Handles user registration with email verification
-- Manages secure authentication with salted password hashing
-- Maintains user profiles and account settings
-- Implements role-based access control for different user types
-- Secures passwords using bcrypt hashing with configurable work factors
-- Generates and validates JWT tokens with custom claims for authenticated access
-- Manages password reset and account recovery workflows
+
+- Handles user registration and management with unique UUID identifiers  
+- Manages user authentication with JWT token-based security  
+- Maintains user profiles with creation timestamps  
+- Stores and retrieves user information from DynamoDB  
+- Provides user lookup by ID and username  
+- Supports updating user profile information  
+- Implements pagination for retrieving multiple users  
 
 #### MetadataAPI Service
-- Stores and manages detailed metadata about music scores
-- Implements a tagging system with predefined categories (classical, folk, pop, rock)
-- Tracks creation and modification timestamps for all resources
-- Manages social interactions including likes and comment threads
-- Provides comprehensive search with multiple filter parameters
-- Implements pagination for large result sets
-- Ensures data consistency with validation rules
-- Exposes endpoints for analytics and trending content
+
+- Stores and manages detailed metadata about music scores  
+- Supports basic tagging functionality for score categorization  
+- Manages social interactions with likes and comments features  
+- Provides search capabilities with filters for user ID, score ID, title, and tags  
+- Ensures data consistency with validation and error handling  
+- Implements access control to ensure users can only modify their own content  
+- Returns standardized response models for consistent API interactions  
 
 #### ScoreAPI Service
-- Manages the secure upload and retrieval of score files (PDFs)
-- Handles file validation and virus scanning
-- Communicates with AWS S3 for durable file storage with backup policies
-- Generates unique, non-guessable file identifiers for each upload
-- Interacts with the MetadataAPI to maintain synchronized file metadata
-- Supports direct file downloads with appropriate content headers
-- Implements file versioning for tracking changes to scores
+
+- Manages the secure upload and retrieval of PDF score files  
+- Validates file types with extension checking  
+- Communicates with AWS S3 for file storage and retrieval  
+- Generates unique identifiers for each uploaded file  
+- Interacts with the MetadataAPI to maintain synchronized file metadata  
+- Enforces user-based access controls for file operations  
+- Supports direct file downloads with appropriate URL generation  
+- Handles proper error responses with detailed logging  
+
 
 ### Communication Patterns
 
