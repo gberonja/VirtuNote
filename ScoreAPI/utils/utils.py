@@ -4,6 +4,7 @@ from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
 from decouple import config
 from jose.exceptions import JWTError
+from typing import List
 
 SECRET_KEY = config("SECRET_KEY")
 ALGORITHM = "HS256"
@@ -25,53 +26,41 @@ async def verify_user(token: str = Depends(oauth2_scheme)) -> str:
             status_code=401, detail="Invalid or expired token")
 
 
-async def create_or_update_metadata(score_id: str, user_id: str, title: str, composer: str):
-    metadata = {
-        "score_id": score_id,
-        "user_id": user_id,
-        "title": title,
-        "composer": composer
-    }
-    print(f"Sending metadata: {metadata}")
-    try:
-        async with httpx.AsyncClient() as client:
-            check_response = await client.get(f"{METADATA_API_URL}?score_id={score_id}")
-            print(f"Metadata check response: {check_response.status_code}")
-            if check_response.status_code == 200:
-                response = await client.put(f"{METADATA_API_URL}?score_id={score_id}", json=metadata)
-            elif check_response.status_code == 404:
-                response = await client.post(METADATA_API_URL, json=metadata)
-            else:
-                raise HTTPException(
-                    status_code=500, detail="Error checking metadata existence")
-            response.raise_for_status()
-            print(f"MetadataAPI response: {response.json()}")
-            return response.json()
-    except httpx.HTTPStatusError as e:
-        print(f"HTTP error while updating metadata: {e}")
-        raise HTTPException(status_code=e.response.status_code,
-                            detail="Metadata operation failed")
-    except httpx.RequestError as e:
-        print(f"MetadataAPI unavailable: {e}")
-        raise HTTPException(
-            status_code=503, detail="MetadataAPI service unavailable")
+async def create_metadata(metadata: dict, token: str) -> dict:
+    headers = {"Authorization": f"Bearer {token}"}
+    async with httpx.AsyncClient() as client:
+        response = await client.post(METADATA_API_URL, json=metadata, headers=headers)
+        response.raise_for_status()
+        return response.json()
 
 
-async def delete_metadata(score_id: str):
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.delete(f"{METADATA_API_URL}?score_id={score_id}")
-            if response.status_code == 404:
-                return {"detail": "Metadata not found or already deleted"}
-            response.raise_for_status()
-            return {"detail": "Metadata deleted successfully"}
-    except httpx.HTTPStatusError as e:
-        raise HTTPException(
-            status_code=e.response.status_code,
-            detail="Metadata deletion failed"
-        )
-    except httpx.RequestError:
-        raise HTTPException(
-            status_code=503,
-            detail="MetadataAPI service unavailable"
-        )
+async def update_metadata(score_id: str, updates: dict, token: str) -> dict:
+    headers = {"Authorization": f"Bearer {token}"}
+    async with httpx.AsyncClient() as client:
+        response = await client.put(f"{METADATA_API_URL}?score_id={score_id}", json=updates, headers=headers)
+        response.raise_for_status()
+        return response.json()
+
+
+async def delete_metadata(score_id: str, token: str) -> dict:
+    headers = {"Authorization": f"Bearer {token}"}
+    async with httpx.AsyncClient() as client:
+        response = await client.delete(f"{METADATA_API_URL}?score_id={score_id}", headers=headers)
+        response.raise_for_status()
+        return response.json()
+
+
+async def fetch_metadata(score_id: str = None, user_id: str = None, token: str = None) -> List[dict]:
+    headers = {"Authorization": f"Bearer {token}"}
+    params = {}
+    if score_id:
+        params["score_id"] = score_id
+    if user_id:
+        params["user_id"] = user_id
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(METADATA_API_URL, params=params, headers=headers)
+        if response.status_code == 404:
+            return []
+        response.raise_for_status()
+        return response.json()
